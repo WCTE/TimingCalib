@@ -84,7 +84,11 @@ class MPMT(Device):
     angle_by_row = [0., 0.297, 0.593] # radians
     dz_by_row = [0., -14.242, -55.724] # mm
     distance_by_row = [0., 96.355, 190.594] # mm distance to PMT centres
-    transverse_radius_by_row = [np.sqrt(distance_by_row[i]**2 - dz_by_row[i]**2) for i in range(len(number_by_row))]
+    #transverse_radius_by_row = [np.sqrt(distance_by_row[i]**2 - dz_by_row[i]**2) for i in range(len(number_by_row))]
+    transverse_radius_by_row = []
+    for i in range(len(number_by_row)):
+        val = np.sqrt(distance_by_row[i]**2 - dz_by_row[i]**2)
+        transverse_radius_by_row.append(val)
 
     for i_row,number in enumerate(number_by_row):
         if i_row == 0:
@@ -103,7 +107,7 @@ class MPMT(Device):
                 rot_phi = R.from_euler('Z', phi_angle)
                 rot_loc = rot_phi.apply(loc)
                 # rotations of the normal defined by 2 extrinsic rotations
-                rot_angles = [angle_by_row[i_row],rot_phi]
+                rot_angles = [angle_by_row[i_row],phi_angle]
                 dome_pmts.append({'kind': 'P3',
                                   'loc': rot_loc,
                                   'loc_sig': [1.0, 1.0, 1.0],
