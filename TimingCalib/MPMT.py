@@ -32,9 +32,11 @@ class MPMT(Device):
     # and def_prop_scale
     def_prop_mean = {'clock_offset':0.,  # ns
                      'adc_cf':2., # 2 ADC per mV
+                     'size': 500.,  # mm diameter
                      }
     def_prop_scale = {'clock_offset':100.,
-                      'adc_cf':0.1
+                      'adc_cf':0.1,
+                      'size': 0.5
                       }
     def_prop_var = {'clock_offset':'uniform'}
 
