@@ -105,8 +105,8 @@ class Device:
         return devices
 
     def get_z_orientation(self, place_info):
-        """Return the location af PMT or LED and direction of its z axis in WCD coordinate system"""
-        # place is a string: either 'true', 'design', or 'est'
+        """Return the location af a device and direction of its z axis in WCD coordinate system"""
+        # place_info is a string: either 'true', 'design', or 'est'
         # head is the location of the device, tail is the end of a vector of
         # similar length aligned with the device's z-axis
         device_place = getattr(self, 'place_'+place_info, None)
@@ -116,21 +116,87 @@ class Device:
         rot1 = R.from_euler(device_place['rot_axes'], device_place['rot_angles'])
         z_axis = rot1.apply([0., 0., 1.])
 
-        tail = np.add(head, dist_head*z_axis)
-        mpmt_place = getattr(self.controller, 'place_'+place_info, None)
-        rot_head = head
-        rot_tail = tail
-        if 'rot_axes' in mpmt_place:
-            rot2 = R.from_euler(mpmt_place['rot_axes'],
-                                mpmt_place['rot_angles'])
-            rot_head = rot2.apply(head)
-            rot_tail = rot2.apply(tail)
-        new_direction = np.subtract(rot_tail, rot_head)
-        norm = np.linalg.norm(new_direction)
+        if self.__class__.__name__ == 'MPMT':
+            location = head
+            direction = z_axis
+        else:
+            # apply translation and rotation of mPMT
+            tail = np.add(head, dist_head*z_axis)
+            mpmt_place = getattr(self.controller, 'place_'+place_info, None)
+            rot_head = head
+            rot_tail = tail
+            if 'rot_axes' in mpmt_place:
+                rot2 = R.from_euler(mpmt_place['rot_axes'],
+                                    mpmt_place['rot_angles'])
+                rot_head = rot2.apply(head)
+                rot_tail = rot2.apply(tail)
+            new_direction = np.subtract(rot_tail, rot_head)
+            norm = np.linalg.norm(new_direction)
 
-        location = np.add(rot_head, mpmt_place.get('loc',[0.,0.,0.]))
-        direction = np.divide(new_direction, norm)
+            location = np.add(rot_head, mpmt_place.get('loc',[0.,0.,0.]))
+            direction = np.divide(new_direction, norm)
+
         return location, direction
+
+    def get_orientation(self, place_info):
+        """Return the location af device and directions of its x and z axes in WCD coordinate system"""
+        # place_info is a string: either 'true', 'design', or 'est'
+        # head is the location of the device, tail_x,_z are the ends of vectors of
+        # similar length aligned with the device's x and z-axes
+        device_place = getattr(self, 'place_'+place_info, None)
+        head = device_place['loc']
+        dist_head = np.linalg.norm(head)
+
+        rot1 = R.from_euler(device_place['rot_axes'], device_place['rot_angles'])
+        x_axis = rot1.apply([1., 0., 0.])
+        z_axis = rot1.apply([0., 0., 1.])
+
+        if self.__class__.__name__ == 'MPMT':
+            location = head
+            direction_x = x_axis
+            direction_z = z_axis
+        else:
+            # apply translation and rotation of mPMT
+            tail_x = np.add(head, dist_head * x_axis)
+            tail_z = np.add(head, dist_head * z_axis)
+            mpmt_place = getattr(self.controller, 'place_'+place_info, None)
+            rot_head = head
+            rot_tail_x = tail_x
+            rot_tail_z = tail_z
+            if 'rot_axes' in mpmt_place:
+                rot2 = R.from_euler(mpmt_place['rot_axes'], mpmt_place['rot_angles'])
+                rot_head = rot2.apply(head)
+                rot_tail_x = rot2.apply(tail_x)
+                rot_tail_z = rot2.apply(tail_z)
+            new_direction_x = np.subtract(rot_tail_x, rot_head)
+            new_direction_z = np.subtract(rot_tail_z, rot_head)
+            norm_x = np.linalg.norm(new_direction_x)
+            norm_z = np.linalg.norm(new_direction_z)
+
+            location = np.add(rot_head, mpmt_place.get('loc',[0.,0.,0.]))
+            direction_x = np.divide(new_direction_x, norm_x)
+            direction_z = np.divide(new_direction_z, norm_z)
+
+        return location, direction_x, direction_z
+
+    def get_circle_points(self, n_point, place_info):
+        """Return a list of length n_point space points of the circle in the x-y plane"""
+        device_prop = getattr(self, 'prop_' + place_info, None)
+        radius = device_prop['size']/2.
+        location, direction_x, direction_z = self.get_orientation(place_info)
+
+        # change magnitude of direction_x to device radius
+        perp = np.array(direction_x)*radius
+
+        # small rotation about the device z_axis
+        rot = R.from_rotvec(2. * np.pi / n_point * np.array(direction_z))
+        points = []
+        for i in range(n_point):
+            points.append(list(np.add(location, perp)))
+            perp = rot.apply(perp)
+
+        return points
+
 
     @property
     def prop_true(self):
