@@ -108,10 +108,10 @@ class Device:
         """Return the location af a device and direction of its z axis in WCD coordinate system"""
         # place_info is a string: either 'true', 'design', or 'est'
         # head is the location of the device, tail is the end of a vector of
-        # similar length aligned with the device's z-axis
+        # length dist_head aligned with the device's z-axis
         device_place = getattr(self, 'place_'+place_info, None)
         head = device_place['loc']
-        dist_head = np.linalg.norm(head)
+        dist_head = 100.
 
         rot1 = R.from_euler(device_place['rot_axes'], device_place['rot_angles'])
         z_axis = rot1.apply([0., 0., 1.])
@@ -142,10 +142,10 @@ class Device:
         """Return the location af device and directions of its x and z axes in WCD coordinate system"""
         # place_info is a string: either 'true', 'design', or 'est'
         # head is the location of the device, tail_x,_z are the ends of vectors of
-        # similar length aligned with the device's x and z-axes
+        # length dist_head aligned with the device's x and z-axes
         device_place = getattr(self, 'place_'+place_info, None)
         head = device_place['loc']
-        dist_head = np.linalg.norm(head)
+        dist_head = 100.
 
         rot1 = R.from_euler(device_place['rot_axes'], device_place['rot_angles'])
         x_axis = rot1.apply([1., 0., 0.])
