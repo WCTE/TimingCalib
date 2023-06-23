@@ -55,6 +55,10 @@ class PMT(Device):
     prop_scale['P31'] = p31_prop_scale
     prop_var['P31'] = p31_prop_var
 
+    def get_xy_points(self, place_info):
+        """Return set of points that shows extent on x-y plane (z=0)"""
+        return self.get_circle_points(20, place_info)
+
     def __init__(self, controller, kind, place_design, place_true):
         super().__init__()
         self.controller = controller

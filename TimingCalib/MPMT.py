@@ -84,7 +84,7 @@ class MPMT(Device):
     # dome pattern of PMTs:
     number_by_row = [1, 6, 12] # number of PMTs per row
     angle_by_row = [0., 0.297, 0.593] # radians
-    dz_by_row = [0., -14.242, -55.724] # mm
+    dz_by_row = [0., -14.242, -55.724] # mm wrt PMT 0
     distance_by_row = [0., 96.355, 190.594] # mm distance to PMT centres
     #transverse_radius_by_row = [np.sqrt(distance_by_row[i]**2 - dz_by_row[i]**2) for i in range(len(number_by_row))]
     transverse_radius_by_row = []
@@ -92,10 +92,22 @@ class MPMT(Device):
         val = np.sqrt(distance_by_row[i]**2 - dz_by_row[i]**2)
         transverse_radius_by_row.append(val)
 
+    # baseplate top surface definition
+    dz_to_pmt0 = 246.8 # mm from top surface to PMT0
+    long_edge = 264. # mm length of long edge
+    long_edge_separation = 528.0 # mm separation of the long edges
+    halfs = [long_edge_separation/2., long_edge/2.]
+    signs = [1.,-1.]
+    base_xy_points = []
+    for i in range(8):
+        x = halfs[[0, 1, 1, 0, 0, 1, 1, 0][i]] * signs[[0, 0, 1, 1, 1, 1, 0, 0][i]]
+        y = halfs[[1, 0, 0, 1, 1, 0, 0, 1][i]] * signs[[1, 1, 1, 1, 0, 0, 0, 0][i]]
+        base_xy_points.append([x,y,0.])
+
     for i_row,number in enumerate(number_by_row):
         if i_row == 0:
             dome_pmts.append({'kind': 'P3',
-                             'loc': [0., 0., 0.],
+                             'loc': [0., 0., dz_to_pmt0],
                              'loc_sig': [1.0, 1.0, 1.0],
                              'rot_axes': 'XZ',
                              'rot_angles': [0., 0.],
@@ -144,6 +156,19 @@ class MPMT(Device):
 
     pmts_design['M2'] = dome_pmts
     leds_design['M2'] = dome_leds
+
+    def get_xy_points(self, place_info):
+        """Return set of points that shows extent on x-y plane (z=0)"""
+        device_place = getattr(self, 'place_' + place_info, None)
+        location = device_place['loc']
+
+        rot = R.from_euler(device_place['rot_axes'], device_place['rot_angles'])
+        points = []
+        for point in self.base_xy_points:
+            rotated_point = rot.apply(point)
+            points.append(list(np.add(location, rotated_point)))
+
+        return points
 
     def __init__(self, controller, kind, place_design, place_true):
         super().__init__()
