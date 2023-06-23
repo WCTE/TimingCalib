@@ -24,6 +24,8 @@ from TimingCalib.LED_pulse import LED_pulse
 from TimingCalib.PMT_signal import PMT_signal
 from TimingCalib.WCD_event import WCD_event
 
+from scipy.spatial.transform import Rotation as R
+
 class WCD(Device):
     """A water cherenkov detector"""
 
