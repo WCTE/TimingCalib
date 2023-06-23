@@ -115,7 +115,7 @@ class MPMT(Device):
         else:
             for i_pmt in range(number):
                 # start with a PMT located on the mpmt x axis
-                loc = [transverse_radius_by_row[i_row], 0., dz_by_row[i_row]]
+                loc = [transverse_radius_by_row[i_row], 0., dz_by_row[i_row]+dz_to_pmt0]
                 # now rotate it around the mpmt z axis
                 phi_angle = 2.*np.pi*i_pmt/number
                 rot_phi = R.from_euler('Z', phi_angle)
