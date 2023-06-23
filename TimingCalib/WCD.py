@@ -142,6 +142,96 @@ class WCD(Device):
     mpmts_design['W2'] = def_mpmts
     calibs_design['W2'] = def_calibs
 
+    # WCTE
+    ######
+
+    wcte_prop_mean = def_prop_mean.copy()
+    wcte_prop_scale = def_prop_scale.copy()
+    wcte_prop_var = def_prop_var.copy()
+
+    prop_mean['WCTE'] = w1_prop_mean
+    prop_scale['WCTE'] = w1_prop_scale
+    prop_var['WCTE'] = w1_prop_var
+
+    wcte_height = 3450.  # mm separation of mPMT opposite baseplates top-bottom
+    wcte_diameter = 3654.  # mm separation of mPMT baseplates on opposite wall locations
+    wall_vertical_pitch = 580.  # mm separation of mPMT centres for rows
+    tb_pitch = 580.  # mm separation of mPMT centres on top and bottom (x and y the same)
+
+    loc_sig = [1.0, 1.0, 1.0]  # mm positioning accuracy
+    rot_angles_sig = [0.001, 0.001, 0.001]  # rad rotational angle positioning accuracy
+
+    # WCTE x-axis aligned with beam, z-axis vertical origin is centre
+    # three separate groups of mPMTs: bottom, wall, top
+
+    # Start with mPMT at centre of bottom, then order like the PMTs in an mPMT
+    # Next do rows starting at phi = 0
+
+    bottom_mpmts = []
+    #################
+
+    loc_centre = [0., 0., -wcte_height / 2.]
+    offsets = [[0., 0., 0.]]
+
+    offs = [-tb_pitch, 0, tb_pitch]
+    for i in range(8):
+        offset = [offs[[2, 2, 1, 0, 0, 0, 1, 2][i]], offs[[1, 2, 2, 2, 1, 0, 0, 0][i]], 0.]
+        offsets.append(offset)
+
+    offs = [-2. * tb_pitch, -tb_pitch, 0, tb_pitch, 2. * tb_pitch]
+    for i in range(12):
+        offset = [offs[[4, 4, 3, 2, 1, 0, 0, 0, 1, 2, 3, 4][i]], offs[[2, 3, 4, 4, 4, 3, 2, 1, 0, 0, 0, 1][i]], 0.]
+        offsets.append(offset)
+
+    for offset in offsets:
+        location = np.add(loc_centre, offset)
+        bottom_mpmts.append({
+            'kind': 'M2',
+            'loc': location,
+            'loc_sig': loc_sig,
+            'rot_axes': 'XYZ',
+            'rot_angles': [0., 0., 0.],
+            'rot_angles_sig': rot_angles_sig
+        })
+
+    wall_mpmts = []
+    ###############
+
+    n_col = 18
+    for i_row in range(-2, 3):
+        loc = [wcte_diameter / 2., 0., i_row * wall_vertical_pitch]
+        for j_col in range(n_col):
+            phi_angle = 2. * np.pi * j_col / n_col
+            rot_phi = R.from_euler('Z', phi_angle)
+            rot_loc = rot_phi.apply(loc)
+            # rotations of the normal defined by 2 extrinsic rotations
+            rot_angles = [-np.pi / 2., phi_angle]
+            wall_mpmts.append({'kind': 'M2',
+                               'loc': rot_loc,
+                               'loc_sig': loc_sig,
+                               'rot_axes': 'yz',
+                               'rot_angles': rot_angles,
+                               'rot_angles_sig': [0.01, 0.01]})
+
+    top_mpmts = []
+    #################
+
+    loc_centre = [0., 0., wcte_height / 2.]
+
+    for offset in offsets:
+        location = np.add(loc_centre, offset)
+        top_mpmts.append({
+            'kind': 'M2',
+            'loc': location,
+            'loc_sig': loc_sig,
+            'rot_axes': 'yz',
+            'rot_angles': [np.pi, 0.],
+            'rot_angles_sig': [0.01, 0.01]
+        })
+
+    mpmts_design['WCTE'] = bottom_mpmts + wall_mpmts + top_mpmts
+
+
     def __init__(self, controller, kind, place_design, place_true):
         super().__init__()
         self.controller = controller
