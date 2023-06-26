@@ -161,7 +161,7 @@ class WCD(Device):
     tb_pitch = 580.  # mm separation of mPMT centres on top and bottom (x and y the same)
 
     loc_sig = [1.0, 1.0, 1.0]  # mm positioning accuracy
-    rot_angles_sig = [0.001, 0.001, 0.001]  # rad rotational angle positioning accuracy
+    rot_angles_sig = [0.01, 0.01]  # rad rotational angle positioning accuracy
 
     # WCTE x-axis aligned with beam, z-axis vertical origin is centre
     # three separate groups of mPMTs: bottom, wall, top
@@ -172,17 +172,17 @@ class WCD(Device):
     bottom_mpmts = []
     #################
 
-    loc_centre = [0., 0., -wcte_height / 2.]
+    loc_centre = [0., -wcte_height / 2., 0.]
     offsets = [[0., 0., 0.]]
 
     offs = [-tb_pitch, 0, tb_pitch]
     for i in range(8):
-        offset = [offs[[2, 2, 1, 0, 0, 0, 1, 2][i]], offs[[1, 2, 2, 2, 1, 0, 0, 0][i]], 0.]
+        offset = [offs[[1, 2, 2, 2, 1, 0, 0, 0][i]], 0., offs[[2, 2, 1, 0, 0, 0, 1, 2][i]]]
         offsets.append(offset)
 
     offs = [-2. * tb_pitch, -tb_pitch, 0, tb_pitch, 2. * tb_pitch]
     for i in range(12):
-        offset = [offs[[4, 4, 3, 2, 1, 0, 0, 0, 1, 2, 3, 4][i]], offs[[2, 3, 4, 4, 4, 3, 2, 1, 0, 0, 0, 1][i]], 0.]
+        offset = [offs[[2, 3, 4, 4, 4, 3, 2, 1, 0, 0, 0, 1][i]], 0., offs[[4, 4, 3, 2, 1, 0, 0, 0, 1, 2, 3, 4][i]]]
         offsets.append(offset)
 
     for offset in offsets:
@@ -191,8 +191,8 @@ class WCD(Device):
             'kind': 'M2',
             'loc': location,
             'loc_sig': loc_sig,
-            'rot_axes': 'XYZ',
-            'rot_angles': [0., 0., 0.],
+            'rot_axes': 'xy',
+            'rot_angles': [-np.pi/2., 0.],
             'rot_angles_sig': rot_angles_sig
         })
 
@@ -201,24 +201,24 @@ class WCD(Device):
 
     n_col = 18
     for i_row in range(-2, 3):
-        loc = [wcte_diameter / 2., 0., i_row * wall_vertical_pitch]
+        loc = [0., i_row * wall_vertical_pitch, wcte_diameter / 2.]
         for j_col in range(n_col):
             phi_angle = 2. * np.pi * j_col / n_col
-            rot_phi = R.from_euler('Z', phi_angle)
+            rot_phi = R.from_euler('Y', phi_angle)
             rot_loc = rot_phi.apply(loc)
             # rotations of the normal defined by 2 extrinsic rotations
-            rot_angles = [-np.pi / 2., phi_angle]
+            rot_angles = [np.pi, phi_angle]
             wall_mpmts.append({'kind': 'M2',
                                'loc': rot_loc,
                                'loc_sig': loc_sig,
-                               'rot_axes': 'yz',
+                               'rot_axes': 'xy',
                                'rot_angles': rot_angles,
-                               'rot_angles_sig': [0.01, 0.01]})
+                               'rot_angles_sig': rot_angles_sig})
 
     top_mpmts = []
     #################
 
-    loc_centre = [0., 0., wcte_height / 2.]
+    loc_centre = [0., wcte_height / 2., 0.]
 
     for offset in offsets:
         location = np.add(loc_centre, offset)
@@ -226,9 +226,9 @@ class WCD(Device):
             'kind': 'M2',
             'loc': location,
             'loc_sig': loc_sig,
-            'rot_axes': 'yz',
-            'rot_angles': [np.pi, 0.],
-            'rot_angles_sig': [0.01, 0.01]
+            'rot_axes': 'xy',
+            'rot_angles': [np.pi / 2., 0.],
+            'rot_angles_sig': rot_angles_sig
         })
 
     mpmts_design['WCTE'] = bottom_mpmts + wall_mpmts + top_mpmts
