@@ -161,7 +161,7 @@ class WCD(Device):
     tb_pitch = 580.  # mm separation of mPMT centres on top and bottom (x and y the same)
 
     loc_sig = [1.0, 1.0, 1.0]  # mm positioning accuracy
-    rot_angles_sig = [0.01, 0.01]  # rad rotational angle positioning accuracy
+    rot_angles_sig = [0.001, 0.001, 0.001]  # rad rotational angle positioning accuracy
 
     # WCTE x-axis aligned with beam, z-axis vertical origin is centre
     # three separate groups of mPMTs: bottom, wall, top
@@ -191,8 +191,8 @@ class WCD(Device):
             'kind': 'M2',
             'loc': location,
             'loc_sig': loc_sig,
-            'rot_axes': 'xy',
-            'rot_angles': [-np.pi/2., 0.],
+            'rot_axes': 'xzy',
+            'rot_angles': [-np.pi/2., 0., 0.],
             'rot_angles_sig': rot_angles_sig
         })
 
@@ -206,12 +206,12 @@ class WCD(Device):
             phi_angle = 2. * np.pi * j_col / n_col
             rot_phi = R.from_euler('Y', phi_angle)
             rot_loc = rot_phi.apply(loc)
-            # rotations of the normal defined by 2 extrinsic rotations
-            rot_angles = [np.pi, phi_angle]
+            # rotations of the normal defined by 3 extrinsic rotations
+            rot_angles = [np.pi, np.pi / 2., phi_angle]
             wall_mpmts.append({'kind': 'M2',
                                'loc': rot_loc,
                                'loc_sig': loc_sig,
-                               'rot_axes': 'xy',
+                               'rot_axes': 'xzy',
                                'rot_angles': rot_angles,
                                'rot_angles_sig': rot_angles_sig})
 
@@ -226,8 +226,8 @@ class WCD(Device):
             'kind': 'M2',
             'loc': location,
             'loc_sig': loc_sig,
-            'rot_axes': 'xy',
-            'rot_angles': [np.pi / 2., 0.],
+            'rot_axes': 'xzy',
+            'rot_angles': [np.pi / 2., 0., 0.],
             'rot_angles_sig': rot_angles_sig
         })
 
