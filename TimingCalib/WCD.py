@@ -163,7 +163,7 @@ class WCD(Device):
 
     wcte_top = 1955.  # mm y coordinate of mPMT base plates on top endcap
     wcte_bottom = -1105.475  # mm y coordinate of mPMT base plates on bottom endcap
-    wcte_diameter = 3422.166.  # mm separation of mPMT baseplates on opposite wall locations
+    wcte_diameter = 3422.166  # mm separation of mPMT baseplates on opposite wall locations
     wall_vertical_pitch = 580.  # mm separation of mPMT centres for rows
     tb_pitch = 580.  # mm separation of mPMT centres on top and bottom (x and y the same)
 
