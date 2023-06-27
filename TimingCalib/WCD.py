@@ -155,7 +155,14 @@ class WCD(Device):
     prop_scale['WCTE'] = w1_prop_scale
     prop_var['WCTE'] = w1_prop_var
 
-    wcte_height = 3450.  # mm separation of mPMT opposite baseplates top-bottom
+    # The WCTE has 4 rows of wall mPMTs, with the beam window on the second row from bottom
+    # Use the centre of the beam window as the height, y = 0
+    # Separation of top and bottom = 3060.475 mm
+    # wcte_bottom: -1 * (half of mPMT baseplate width + wall_vertical_pitch + 261.475 mm) = -(528/2. + 580 + 261.475)
+    # wcte_top: half of mPMT baseplate width + 2*wall_vertical_pitch + 531 mm = 528/2. + 2*580 + 531 = 1955 mm
+
+    wcte_top = 1955.  # mm y coordinate of mPMT base plates on top endcap
+    wcte_bottom = -1105.475  # mm y coordinate of mPMT base plates on bottom endcap
     wcte_diameter = 3654.  # mm separation of mPMT baseplates on opposite wall locations
     wall_vertical_pitch = 580.  # mm separation of mPMT centres for rows
     tb_pitch = 580.  # mm separation of mPMT centres on top and bottom (x and y the same)
@@ -172,7 +179,7 @@ class WCD(Device):
     bottom_mpmts = []
     #################
 
-    loc_centre = [0., -wcte_height / 2., 0.]
+    loc_centre = [0., wcte_bottom, 0.]
     offsets = [[0., 0., 0.]]
 
     offs = [-tb_pitch, 0, tb_pitch]
@@ -199,8 +206,8 @@ class WCD(Device):
     wall_mpmts = []
     ###############
 
-    n_col = 18
-    for i_row in range(-2, 3):
+    n_col = 16
+    for i_row in range(-1, 3):
         loc = [0., i_row * wall_vertical_pitch, wcte_diameter / 2.]
         for j_col in range(n_col):
             phi_angle = 2. * np.pi * j_col / n_col
@@ -218,7 +225,7 @@ class WCD(Device):
     top_mpmts = []
     #################
 
-    loc_centre = [0., wcte_height / 2., 0.]
+    loc_centre = [0., wcte_top, 0.]
 
     for offset in offsets:
         location = np.add(loc_centre, offset)
