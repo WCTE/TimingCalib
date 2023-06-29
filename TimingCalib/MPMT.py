@@ -110,8 +110,8 @@ class MPMT(Device):
     nft = 20
     for i in range(nft):
         theta = 2.*np.pi * i/nft
-        x = ft_xy[0] + ft_diameter/2. * np.cos(theta)
-        x = ft_xy[1] + ft_diameter / 2. * np.sin(theta)
+        x = ft_xy[0] + ft_diameter / 2. * np.cos(theta)
+        y = ft_xy[1] + ft_diameter / 2. * np.sin(theta)
         feedthough_xy_points.append([x, y, 0.])
 
     for i_row,number in enumerate(number_by_row):
