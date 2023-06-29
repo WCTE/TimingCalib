@@ -103,6 +103,16 @@ class MPMT(Device):
         x = halfs[[0, 1, 1, 0, 0, 1, 1, 0][i]] * signs[[0, 0, 1, 1, 1, 1, 0, 0][i]]
         y = halfs[[1, 0, 0, 1, 1, 0, 0, 1][i]] * signs[[1, 1, 1, 1, 0, 0, 0, 0][i]]
         base_xy_points.append([x,y,0.])
+    # feedthrough hole definition (to show orientation clearly)
+    ft_xy = [195.26, -43.29] # mm centre of feedthrough hole
+    ft_diameter = 43. # mm as seen from outside
+    feedthough_xy_points = []
+    nft = 20
+    for i in range(nft):
+        theta = 2.*np.pi * i/nft
+        x = ft_xy[0] + ft_diameter/2. * np.cos(theta)
+        x = ft_xy[1] + ft_diameter / 2. * np.sin(theta)
+        feedthough_xy_points.append([x, y, 0.])
 
     for i_row,number in enumerate(number_by_row):
         if i_row == 0:
@@ -131,18 +141,51 @@ class MPMT(Device):
 
 
     dome_leds = []
-    dome_leds.append({'kind': 'L1',
-                     'loc': [50., 0., 200., ],
-                     'loc_sig': [1.0, 1.0, 1.0],
-                     'rot_axes': 'XZ',
-                     'rot_angles': [0., 0.],
-                     'rot_angles_sig': [0.01, 100.]})
-    dome_leds.append({'kind': 'L2',
-                     'loc': [0., 50., 200., ],
-                     'loc_sig': [1.0, 1.0, 1.0],
-                     'rot_axes': 'XZ',
-                     'rot_angles': [0., 0.],
-                     'rot_angles_sig': [0.01, 100.]})
+    # The dome LED holes are located with respect to the outer top flat surface of the matrix
+    matrix_z = 115.85 # mm in zm coordinate of outer top flat surface of the matrix
+    # The LED diffuser location is the end of the LED diffuser holder
+    diffuser_holder_length = 66.7 # mm distance from matrix surface to end of diffuser holder
+    # dome pattern of LED hole locations on surface of matrix (z is wrt outer top flat surface of the matrix)
+    led_number_by_row = [3, 3, 6] # number of LED holes per row
+    led_angle_by_row = [0.17, 0.388, 0.707] # radians
+    led_dz_by_row = [68.709, 52.644, 8.504] # mm wrt outer top flat surface of the matrix
+    led_xm_by_row = [39.221, 0., 167.804]  # mm xm coordinate for first LED hole in the row (numbering azimuthally)
+    led_ym_by_row = [22.645, 101.328, 44.963]  # mm ym coordinate for first LED hole in the row (numbering azimuthally)
+    led_transverse_radius_by_row = []
+    for i in range(len(number_by_row)):
+        val = np.sqrt(led_xm_by_row[i]**2 + led_ym_by_row[i]**2)
+        led_transverse_radius_by_row.append(val)
+
+    for i_row,number in enumerate(led_number_by_row):
+        if i_row == 0:
+            kind = 'L1'
+        else:
+            kind = 'L2'
+
+        # azimuthal angle of first LED hole in row
+        phi_0 = np.arctan2(led_ym_by_row[i_row], led_xm_by_row[i_row])
+        for i_led in range(number):
+            # start with the LED hole located closest to the xm axis
+            # start with a vertically oriented diffuser holder
+            loc = [0.,0.,diffuser_holder_length]
+            # rotate it about the y-axis
+            rot_holder = R.from_euler('Y', led_angle_by_row[i_row])
+            rot_loc = rot_holder.apply(loc)
+            # translate to the mPMT coordinates on xm axis (had it been located on the xm axis)
+            trans_loc = [rot_loc[0] + led_transverse_radius_by_row[i_row], rot_loc[1], rot_loc[2] + matrix_z + led_dz_by_row[i_row]]
+            # now rotate it about the mpmt z axis
+
+            phi_angle = 2.*np.pi*i_led/number + phi_0
+            rot_phi = R.from_euler('Z', phi_angle)
+            rot_trans = rot_phi.apply(trans_loc)
+            # rotations of the normal defined by 2 extrinsic rotations
+            rot_angles = [led_angle_by_row[i_row], phi_angle]
+            dome_leds.append({'kind': kind,
+                              'loc': rot_trans,
+                              'loc_sig': [1.0, 1.0, 1.0],
+                              'rot_axes': 'yz',
+                              'rot_angles': rot_angles,
+                              'rot_angles_sig': [0.01, 0.01]})
 
     # Standard dome MPMT:
     m2_prop_mean = def_prop_mean.copy()
@@ -157,14 +200,19 @@ class MPMT(Device):
     pmts_design['M2'] = dome_pmts
     leds_design['M2'] = dome_leds
 
-    def get_xy_points(self, place_info):
-        """Return set of points that shows extent on x-y plane (z=0)"""
+    def get_xy_points(self, place_info, feature='base'):
+        """Return set of points that shows features on x-y plane (z=0)
+        To show feedthrough, set feature='feedthrough'
+        """
         device_place = getattr(self, 'place_' + place_info, None)
         location = device_place['loc']
 
         rot = R.from_euler(device_place['rot_axes'], device_place['rot_angles'])
+        xy_points = self.base_xy_points
+        if feature == 'feedthrough':
+            xy_points = self.feedthough_xy_points
         points = []
-        for point in self.base_xy_points:
+        for point in xy_points:
             rotated_point = rot.apply(point)
             points.append(list(np.add(location, rotated_point)))
 
