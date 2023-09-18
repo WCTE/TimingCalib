@@ -83,7 +83,7 @@ class MPMT(Device):
     dome_pmts = []
     # dome pattern of PMTs:
     number_by_row = [1, 6, 12] # number of PMTs per row
-    angle_by_row = [0., 0.297, 0.593] # radians
+    angle_by_row = [0., -0.297, -0.593] # radians
     dz_by_row = [0., -14.242, -55.724] # mm wrt PMT 0
     distance_by_row = [0., 96.355, 190.594] # mm distance to PMT centres
     #transverse_radius_by_row = [np.sqrt(distance_by_row[i]**2 - dz_by_row[i]**2) for i in range(len(number_by_row))]
@@ -135,7 +135,7 @@ class MPMT(Device):
                 dome_pmts.append({'kind': 'P3',
                                   'loc': rot_loc,
                                   'loc_sig': [1.0, 1.0, 1.0],
-                                  'rot_axes': 'yz',
+                                  'rot_axes': 'xz',
                                   'rot_angles': rot_angles,
                                   'rot_angles_sig': [0.01, 0.01]})
 
@@ -147,7 +147,7 @@ class MPMT(Device):
     diffuser_holder_length = 66.7 # mm distance from matrix surface to end of diffuser holder
     # dome pattern of LED hole locations on surface of matrix (z is wrt outer top flat surface of the matrix)
     led_number_by_row = [3, 3, 6] # number of LED holes per row
-    led_angle_by_row = [0.17, 0.388, 0.707] # radians
+    led_angle_by_row = [-0.17, -0.388, -0.707] # radians
     led_dz_by_row = [68.709, 52.644, 8.504] # mm wrt outer top flat surface of the matrix
     led_xm_by_row = [-22.645, -101.328, -44.963]  # mm xm coordinate for first LED hole in the row (numbering azimuthally)
     led_ym_by_row = [39.221, 0., 167.804]  # mm ym coordinate for first LED hole in the row (numbering azimuthally)
@@ -183,7 +183,7 @@ class MPMT(Device):
             dome_leds.append({'kind': kind,
                               'loc': rot_trans,
                               'loc_sig': [1.0, 1.0, 1.0],
-                              'rot_axes': 'yz',
+                              'rot_axes': 'xz',
                               'rot_angles': rot_angles,
                               'rot_angles_sig': [0.01, 0.01]})
 
