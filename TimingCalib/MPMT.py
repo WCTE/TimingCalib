@@ -124,8 +124,8 @@ class MPMT(Device):
                              'rot_angles_sig': [0.01, 100.]})
         else:
             for i_pmt in range(number):
-                # start with a PMT located on the mpmt x axis
-                loc = [transverse_radius_by_row[i_row], 0., dz_by_row[i_row]+dz_to_pmt0]
+                # start with a PMT located on the mpmt y axis
+                loc = [0., transverse_radius_by_row[i_row], dz_by_row[i_row]+dz_to_pmt0]
                 # now rotate it around the mpmt z axis
                 phi_angle = 2.*np.pi*i_pmt/number
                 rot_phi = R.from_euler('Z', phi_angle)
@@ -149,8 +149,8 @@ class MPMT(Device):
     led_number_by_row = [3, 3, 6] # number of LED holes per row
     led_angle_by_row = [0.17, 0.388, 0.707] # radians
     led_dz_by_row = [68.709, 52.644, 8.504] # mm wrt outer top flat surface of the matrix
-    led_xm_by_row = [39.221, 0., 167.804]  # mm xm coordinate for first LED hole in the row (numbering azimuthally)
-    led_ym_by_row = [22.645, 101.328, 44.963]  # mm ym coordinate for first LED hole in the row (numbering azimuthally)
+    led_xm_by_row = [-22.645, -101.328, -44.963]  # mm xm coordinate for first LED hole in the row (numbering azimuthally)
+    led_ym_by_row = [39.221, 0., 167.804]  # mm ym coordinate for first LED hole in the row (numbering azimuthally)
     led_transverse_radius_by_row = []
     for i in range(len(number_by_row)):
         val = np.sqrt(led_xm_by_row[i]**2 + led_ym_by_row[i]**2)
@@ -165,7 +165,7 @@ class MPMT(Device):
         # azimuthal angle of first LED hole in row
         phi_0 = np.arctan2(led_ym_by_row[i_row], led_xm_by_row[i_row])
         for i_led in range(number):
-            # start with the LED hole located closest to the xm axis
+            # start with the first LED hole located at positive azimuth angle wrt ym axis
             # start with a vertically oriented diffuser holder
             loc = [0.,0.,diffuser_holder_length]
             # rotate it about the y-axis
