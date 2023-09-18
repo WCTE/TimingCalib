@@ -147,10 +147,10 @@ class MPMT(Device):
     diffuser_holder_length = 66.7 # mm distance from matrix surface to end of diffuser holder
     # dome pattern of LED hole locations on surface of matrix (z is wrt outer top flat surface of the matrix)
     led_number_by_row = [3, 3, 6] # number of LED holes per row
-    led_angle_by_row = [-0.17, -0.388, -0.707] # radians
+    led_angle_by_row = [0.17, 0.388, 0.707] # radians
     led_dz_by_row = [68.709, 52.644, 8.504] # mm wrt outer top flat surface of the matrix
-    led_xm_by_row = [-22.645, -101.328, -44.963]  # mm xm coordinate for first LED hole in the row (numbering azimuthally)
-    led_ym_by_row = [39.221, 0., 167.804]  # mm ym coordinate for first LED hole in the row (numbering azimuthally)
+    led_xm_by_row = [39.221, 0., 167.804]  # mm xm coordinate for first LED hole in the row (numbering azimuthally)
+    led_ym_by_row = [22.645, 101.328, 44.963]  # mm ym coordinate for first LED hole in the row (numbering azimuthally)
     led_transverse_radius_by_row = []
     for i in range(len(number_by_row)):
         val = np.sqrt(led_xm_by_row[i]**2 + led_ym_by_row[i]**2)
@@ -173,9 +173,9 @@ class MPMT(Device):
             rot_loc = rot_holder.apply(loc)
             # translate to the mPMT coordinates on xm axis (had it been located on the xm axis)
             trans_loc = [rot_loc[0] + led_transverse_radius_by_row[i_row], rot_loc[1], rot_loc[2] + matrix_z + led_dz_by_row[i_row]]
-            # now rotate it about the mpmt z axis
+            # now rotate it about the mpmt z axis (add extra 90 degrees, because of change on 2023-09-17)
 
-            phi_angle = 2.*np.pi*i_led/number + phi_0
+            phi_angle = 2.*np.pi*i_led/number + phi_0 + np.pi/2.
             rot_phi = R.from_euler('Z', phi_angle)
             rot_trans = rot_phi.apply(trans_loc)
             # rotations of the normal defined by 2 extrinsic rotations
@@ -183,7 +183,7 @@ class MPMT(Device):
             dome_leds.append({'kind': kind,
                               'loc': rot_trans,
                               'loc_sig': [1.0, 1.0, 1.0],
-                              'rot_axes': 'xz',
+                              'rot_axes': 'yz',
                               'rot_angles': rot_angles,
                               'rot_angles_sig': [0.01, 0.01]})
 
