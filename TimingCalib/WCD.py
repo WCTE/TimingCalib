@@ -214,7 +214,7 @@ class WCD(Device):
             rot_phi = R.from_euler('Y', phi_angle)
             rot_loc = rot_phi.apply(loc)
             # rotations of the normal defined by 3 extrinsic rotations
-            rot_angles = [np.pi, 0., phi_angle]
+            rot_angles = [np.pi, np.pi, phi_angle]
             wall_mpmts.append({'kind': 'M2',
                                'loc': rot_loc,
                                'loc_sig': loc_sig,
