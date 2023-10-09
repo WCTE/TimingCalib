@@ -319,6 +319,7 @@ class WCD(Device):
                 cos_emission = np.dot(light_vec, led_z_axis)/dist
                 cos_arrival = -1. * np.dot(light_vec, pmt_z_axis)/dist
 
+                n_photons = 0
                 if led.prop_true['cone_ring_width'] > 0.:
                     # a ring of light is produced (for visualization)
                     if np.cos(led.prop_true['cone_angle']+led.prop_true['cone_ring_width']) < cos_emission < \
@@ -338,6 +339,7 @@ class WCD(Device):
                             falloff = cos_emission**2
                         n_photons = (pmt.prop_true['size']/dist)**2 /16. * \
                                     falloff * led_pulse.intensity
+                if n_photons > 0:
                     tof = dist/vc
                     delay = mpmt_led.prop_true['clock_offset'] + \
                             led_pulse.delay + tof
