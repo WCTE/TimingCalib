@@ -20,6 +20,7 @@ class LED(Device):
     # if new properties are needed, be sure to add to def_prop_mean
     # and def_prop_scale
     def_prop_mean = {'cone_angle':1.0,      # 1 radian cone
+                     'cone_ring_width':0.0, # if zero, then full cone, otherwise specifies ring width (radians)
                      'intensity':1.E8,    # 0.1 billion photons per ns per volt
                      'intensity_rel_sig':0.01, # relative standard deviation
                      'delay':4.,          # 1 ns delay for leading edge
@@ -29,6 +30,7 @@ class LED(Device):
                      'pulse_width_jitter':0.05 # standard deviation of above
                      }
     def_prop_scale = {'cone_angle':0.01,
+                      'cone_ring_width':0.0,
                       'intensity':2.E7,
                       'intensity_rel_sig':0.,
                       'delay':1.0,

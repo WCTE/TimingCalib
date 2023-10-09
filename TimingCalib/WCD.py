@@ -319,15 +319,25 @@ class WCD(Device):
                 cos_emission = np.dot(light_vec, led_z_axis)/dist
                 cos_arrival = -1. * np.dot(light_vec, pmt_z_axis)/dist
 
-                if cos_emission > np.cos(led.prop_true['cone_angle']) and \
-                    cos_arrival > np.cos(pmt.prop_true['fov']):
-                    # simple model for light intensity vs cos_emission_angle
-                    falloff = 1.
-                    # beacon is uniform intensity
-                    if led.prop_true['cone_angle'] < np.pi:
-                        falloff = cos_emission**2
-                    n_photons = (pmt.prop_true['size']/dist)**2 /16. * \
-                                falloff * led_pulse.intensity
+                if led.prop_true['cone_ring_width'] > 0.:
+                    # a ring of light is produced (for visualization)
+                    if np.cos(led.prop_true['cone_angle']+led.prop_true['cone_ring_width']) < cos_emission < \
+                            np.cos(max(0.,led.prop_true['cone_angle']-led.prop_true['cone_ring_width'])) and \
+                        cos_arrival > np.cos(pmt.prop_true['fov']):
+                        # ignore falloff across ring
+                        falloff = 1.
+                        n_photons = (pmt.prop_true['size']/dist)**2 /16. * \
+                                    falloff * led_pulse.intensity
+                else:
+                    if cos_emission > np.cos(led.prop_true['cone_angle']) and \
+                        cos_arrival > np.cos(pmt.prop_true['fov']):
+                        # simple model for light intensity vs cos_emission_angle
+                        falloff = 1.
+                        # beacon is uniform intensity
+                        if led.prop_true['cone_angle'] < np.pi:
+                            falloff = cos_emission**2
+                        n_photons = (pmt.prop_true['size']/dist)**2 /16. * \
+                                    falloff * led_pulse.intensity
                     tof = dist/vc
                     delay = mpmt_led.prop_true['clock_offset'] + \
                             led_pulse.delay + tof
