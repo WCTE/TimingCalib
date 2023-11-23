@@ -191,15 +191,18 @@ class WCD(Device):
     for i in range(12):
         offset = [offs[[2, 3, 4, 4, 4, 3, 2, 1, 0, 0, 0, 1][i]], 0., offs[[4, 4, 3, 2, 1, 0, 0, 0, 1, 2, 3, 4][i]]]
         offsets.append(offset)
+        
+    # put feedthroughs in correct orientations... pi multiplier starting at #0
+    y_rots = [0,1,1,1,1,1,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0]
 
-    for offset in offsets:
+    for offset,y_rot in zip(offsets,y_rots):
         location = np.add(loc_centre, offset)
         bottom_mpmts.append({
             'kind': 'M2',
             'loc': location,
             'loc_sig': loc_sig,
             'rot_axes': 'xzy',
-            'rot_angles': [-np.pi/2., 0., 0.],
+            'rot_angles': [-np.pi/2., 0., y_rot*np.pi],
             'rot_angles_sig': rot_angles_sig
         })
 
@@ -214,7 +217,7 @@ class WCD(Device):
             rot_phi = R.from_euler('Y', phi_angle)
             rot_loc = rot_phi.apply(loc)
             # rotations of the normal defined by 3 extrinsic rotations
-            rot_angles = [np.pi, np.pi, phi_angle]
+            rot_angles = [np.pi, 3.*np.pi/2., phi_angle]
             wall_mpmts.append({'kind': 'M2',
                                'loc': rot_loc,
                                'loc_sig': loc_sig,
@@ -227,14 +230,17 @@ class WCD(Device):
 
     loc_centre = [0., wcte_top, 0.]
 
-    for offset in offsets:
+    # put feedthroughs in correct orientations... pi multiplier starting at #85
+    y_rots = [0,1,1,1.5,1.5,0,0,0.5,0.5,1,1,1,1.5,1.5,1.5,0,0,0,0.5,0.5,0.5]
+    
+    for offset,y_rot in zip(offsets,y_rots):
         location = np.add(loc_centre, offset)
         top_mpmts.append({
             'kind': 'M2',
             'loc': location,
             'loc_sig': loc_sig,
             'rot_axes': 'xzy',
-            'rot_angles': [np.pi / 2., 0., 0.],
+            'rot_angles': [np.pi / 2., 0., y_rot*np.pi],
             'rot_angles_sig': rot_angles_sig
         })
 
