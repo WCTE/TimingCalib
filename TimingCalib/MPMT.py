@@ -113,6 +113,19 @@ class MPMT(Device):
         x = ft_xy[0] + ft_diameter / 2. * np.cos(theta)
         y = ft_xy[1] + ft_diameter / 2. * np.sin(theta)
         feedthough_xy_points.append([x, y, 0.])
+    # Survey holes definition (to show orientation clearly)
+    survey_c = 196.58 # mm ym or ym coordinates are +/- this value
+    survey_holes_diameter = 8 # mm
+    survey_holes_xy_points = []
+    nsh = 20
+    for xs,ys in [[-survey_c, -survey_c], [-survey_c, survey_c], [survey_c, -survey_c], [survey_c, survey_c]]:
+        survey_hole_xy_points = []
+        for i in range(nsh):
+            theta = 2.*np.pi * i/nsh
+            x = xs + survey_holes_diameter / 2. * np.cos(theta)
+            y = ys + survey_holes_diameter / 2. * np.sin(theta)
+            survey_hole_xy_points.append([x, y, 0.])
+        survey_holes_xy_points.append(survey_hole_xy_points)
 
     for i_row,number in enumerate(number_by_row):
         if i_row == 0:
@@ -203,6 +216,7 @@ class MPMT(Device):
     def get_xy_points(self, place_info, feature='base'):
         """Return set of points that shows features on x-y plane (z=0)
         To show feedthrough, set feature='feedthrough'
+        To show survey CN hole, set feature='survey_cN' where N is 1, 2, 3, or 4
         """
         device_place = getattr(self, 'place_' + place_info, None)
         location = device_place['loc']
@@ -211,6 +225,10 @@ class MPMT(Device):
         xy_points = self.base_xy_points
         if feature == 'feedthrough':
             xy_points = self.feedthough_xy_points
+        elif feature.startswith('survey_c'):
+            n = int(feature[8])
+            xy_points = self.survey_holes_xy_points[n-1]
+
         points = []
         for point in xy_points:
             rotated_point = rot.apply(point)
