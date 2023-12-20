@@ -94,7 +94,7 @@ class MPMT(Device):
 
     # baseplate top surface definition
     dz_to_pmt0 = 246.8 # mm from top surface to PMT0
-    long_edge = 264. # mm length of long edge
+    long_edge = 314.88 # mm length of long edge
     long_edge_separation = 528.0 # mm separation of the long edges
     halfs = [long_edge_separation/2., long_edge/2.]
     signs = [1.,-1.]
